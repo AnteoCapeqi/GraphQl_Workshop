@@ -882,3 +882,124 @@ import userResolvers from './user';
 import messageResolvers from './message';
 export default [userResolvers, messageResolvers];
 ```
+
+Vous avez maintenant un point de départ pour votre application graphql avec node.js.
+
+## Postgresql & Sequelize
+
+Nous avons une application fonctionnelle mais toujours pas de base de données. Nous y voila!
+
+Dans cette section nous allons setup notre db postgresql avec comme **ORM**(Object-relational mapping) Sequelize.
+Un **ORM** permet au développeurs de manipuler la db avec du Javascript plutôt qu'avec un Query langage.
+
+On va commencer par installer Sequelize(qui est le client pour postgres pour node.js).
+```
+npm install pg sequelize --save
+```
+
+Nous allons créer dans notre dossier models deux fichiers : user.js et message.js.
+Comme dis lors de la dernière section nous allons placer notre base de donnée dans le modèle et ne plus utilisé nos deux variables.
+
+Commençons par notre fichier *src/models/user.js*
+```
+const user = (sequelize, DataTypes) => {
+  const User = sequelize.define('user', {
+    username: {
+      type: DataTypes.STRING,
+      unique: true,
+    },
+  });
+  return User;
+};
+export default user;
+```
+On a donc ici une type string unique car nous ne voulons pas avoir deux fois le même username.
+Nous allons ensuite lié notre user a nos message et rajouter une option pour que lors de la suppression d'un User tous les messages associé sois eux aussi effacé.
+```
+const user = (sequelize, DataTypes) => {
+  const User = sequelize.define('user', {
+    username: {
+      type: DataTypes.STRING,
+    },
+  });
+  User.associate = models => {
+    User.hasMany(models.Message, { onDelete: 'CASCADE' });
+  };
+  return User;
+};
+export default user;
+```
+
+On va faire de meme pour le fichier *src/models/message.js*
+```
+const message = (sequelize, DataTypes) => {
+  const Message = sequelize.define('message', {
+    text: {
+      type: DataTypes.STRING,
+    },
+  });
+  Message.associate = models => {
+    Message.belongsTo(models.User);
+  };
+  return Message;
+};
+export default message;
+```
+
+On s'occupe ensuite du fichier *src/models/index.js*
+```
+import Sequelize from 'sequelize';
+const sequelize = new Sequelize(
+  process.env.DATABASE,
+  process.env.DATABASE_USER,
+  process.env.DATABASE_PASSWORD,
+  {
+    dialect: 'postgres',
+  },
+);
+export { sequelize };
+```
+On utilise ici notre fichier *'.env'* pour stocké nos information sur notre db.
+On va ici associté nos model les un les autres pou faciliter leurs export.
+```
+import Sequelize from 'sequelize';
+const sequelize = new Sequelize(
+  process.env.DATABASE,
+  process.env.DATABASE_USER,
+  process.env.DATABASE_PASSWORD,
+  {
+    dialect: 'postgres',
+  },
+);
+const models = {
+  User: sequelize.import('./user'),
+  Message: sequelize.import('./message'),
+};
+Object.keys(models).forEach(key => {
+  if ('associate' in models[key]) {
+    models[key].associate(models);
+  }
+});
+export { sequelize };
+export default models;
+```
+Il nous reste a ajouter les dites informations dans notre  *'.env'*
+```
+DATABASE=postgres
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+```
+On ajoute ensuite nos import a notre fichier *'src/index.js'*
+```
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import schema from './schema';
+import resolvers from './resolvers';
+import models, { sequelize } from './models';
+...
+sequelize.sync().then(async () => {
+  app.listen({ port: 8001 }, () => {
+    console.log('Apollo Server on http://localhost:8001/graphql');
+  });
+});
+```
