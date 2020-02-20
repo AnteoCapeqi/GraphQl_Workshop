@@ -11,15 +11,15 @@ On va ici utiliser Appolo Server avec Express. Il existe de nombreuses
 libraires que l'on peut employé mais mon choix c'est porté sur ceux la car c'est
 sur eux que j'ai trouvé le plus de documentation et de tuto.
 
-- #### Appolo Server
+#### Appolo Server
 
 ``npm install apollo-server apollo-server-express --save``
 
-- #### Express
+#### Express
 
 ``npm install express graphql --save ``
 
-- #### Premiers pas
+#### Premiers pas
 
 Pour commencer on va déjà les importer dans notre fichier '*index.js*'
 
@@ -93,11 +93,15 @@ On introduis ensuite notre premiere query
 Si on nous renvoie une donnée **me** avec comme **username** *Martin Malin* alors tout est bon
 et nous pouvons continuer.
 
-- #### Cors
+#### Cors
 
 Cette partie est ***optionnelle***, mais j’apprécie beaucoup cors. Cors est un acronyme
 pour **Cross-Origin Resource Sharing** ce qui ici va nous permettre d’émuler des requêtes Http depuis d'autre domaine que le notre.
 
+On installe Cors
+```
+npm install cors --save
+```
 On ajoute donc notre import dans index.js
 ```
 import cors from 'cors';
@@ -109,7 +113,7 @@ app.use(cors());
 
 ## 2 - Types definition
 
-- #### Le point d'exclamation
+#### Le point d'exclamation
 
 Dans cette section on va voir les types définition et la manière dont elle définisse
 notre schéma. Un schéma Graphql est définis par ces Types, les relations entre eux et
@@ -203,7 +207,7 @@ Essayons maintenant nos query sur le playground.
 ```
 On nous renvoie bien deux entités différentes. Merci les arguments graphql ;-)
 
-- #### Une liste d'users
+#### Une liste d'users
 
 Nous allons maintenant creer une troisieme query qui va nous permettre d'afficher une liste de l'ensemble de nos users.
 ```
@@ -235,7 +239,7 @@ const resolvers = {
 Nous avons maintenant 3 query qui peuvent être utilisée dans dans notre Graphql Background. Toutes opèrent sur le même type User et ont chacune un resolvers propres.
 Toutes nos query sont regroupé dans sous une seule query type qui liste toutes les query de notre Grapqhql Api.
 ## 3 - Le resolver
-- #### Resolver par champ
+#### Resolver par champ
 
 Dans cette section nous allons nous intéresser au coté resolver de notre schéma GraphQl avec Appolo server. Dans notre schéma nous avons définis des types, leurs relation et leur structure mais rien sur comment récupérer nos data. Voila ou notre resolvers arrive en scène.
 En js les resolvers sont groupé dans un objet Javascript souvent appelé le resolver map.
@@ -273,6 +277,74 @@ On peut remarquez que le résultat nous affiche des *usernames* **Ronflex** pour
 Les resolvers peuvent agir sur des champs et ecraser les datas existantes, ici on a écraser le champ username avec notre resolvers.
 Si on ne donne aucune instructions sur le champ il prendra la valeur par défaut de User.
 
-- #### Les arguments
+#### Les arguments
+##### L'Argument parent
+Continuons avec les arguments de nos resolvers. Précédemment nous avons vu que le second arguments de notre fonction récupère l'argument qui est retourné d'une query. C'est comme cela que nous avons pu récupérer notre id pour notre user depuis notre query.
+``user: (parent, { id })``
+Le premier argument est appelé l'argument parent(ou root argument) et il renvoie toujours le champ résolu précédemment. Regardons ensemble le nouveaux resolver pour notre champ username.
+```
+User: {
+    username: parent => {
+      return parent.username;
+    }
+```
+On peut voir dans le playground que nos username sont retouné a la normale. Notre resolver va donc allé résoudre le resolver User avant de résoudre le username, nous avons donc les username de notre objet user.
+Pour être plus explicite dans notre resolver on peut remplacer '**parent**' par '**user**'.
+```
+User: {
+    username: user => {
+      return user.username;
+    }
+```
+Dans ce cas si notre resolver n'est pas très utile car il reproduit le fonctionnement par défaut de notre GraphQl resolver.
+Mais nous pouvons constater que ce resolvers nous apporte beaucoup de flexibilité avec nos data.
+Nous pouvons récupérer des donnée et les manipuler plus facilement.
+```
+const resolvers = {
+  ...
+  User: {
+    username: user => `${user.firstname} ${user.lastname}`,
+  },
+};
+```
+Comme ici ou l'on affiche notre username avec le nom et prénom grâce a un template.
+Nous allons laissé le resolvers username de coté pour l'instant car il ne fait que reproduire le fonctionnement par défaut d'Appolo server.
+Ils sont appelé les resolver par défaut.
+##### L'argument context
+Regardons ensuite les autres arguments que notre fonction peut avoir
+```
+(parent, args, context, info) => { ... }
+```
+Notre troisième argument ici est le **context**. Le contexte est très pratique car il nous permet de récupérer des data depuis l’extérieur de notre fonction resolver.
+Imaginons que l'un de nos utilisateur est connecté depuis un autre service que celui de votre application et que vous recèperiez cette data d'autre part. Vous pouvez injectez cette data dans le **context**. ou elle sera récupérer. Nous allons supprimer la ligne ``let me =... `` et l'introduire dans l’initialisation de notre Appolo server.
+```
+const server = new ApolloServer({
+  typeDefs: schema,
+  resolvers,
+  context: {
+    me: users[1],
+  },
+});
+```
+Ensuite on envoie le context comme troisièmes arguments de notre resolver.
+```
+const resolvers = {
+  Query: {
+    users: () => {
+      return Object.values(users);
+    },
+    user: (parent, { id }) => {
+      return users[id];
+    },
+    me: (parent, args, { me }) => {
+      return me;
+    },
+  },
+}
+```
+Le context est le même pour chaque chaque resolvers.
+Chaque resolvers peut accéder au context en l'utilisant comme troisièmes arguments.
 
-Continuons avec les arguments de nos resolver
+##### L'argument infos
+Ce dernier n'est pas très utilisé car il donne que des informations interne a graphql.
+Il est surtout utilisé pour du debbuging ou du tracking, nous verrons ça plus loin.
