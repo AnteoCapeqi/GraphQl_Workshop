@@ -372,7 +372,7 @@ const schema = gql`
   }
 `;
 ```
-On rajoute ensuite une variable contenant nos messages ainsi que comme toujours nos resolvers correspondant.
+On rajoute ensuite une variable(sample de données) contenant nos messages ainsi que comme toujours nos resolvers correspondant.
  ```
  let messages = {
   1: {
@@ -410,7 +410,7 @@ Message: {
     },
   },
 ```
-Pour tester cela nous allons entré une query pour verifier que tous est bien juste
+Pour tester cela nous allons entré une query pour vérifier que tous est bien juste
 ```
 {
   message(id: "1") {
@@ -422,4 +422,65 @@ Pour tester cela nous allons entré une query pour verifier que tous est bien ju
     }
   }
 }
+```
+Nous avons bien les bon résultats dans le playground, nous pouvons maintenant adapter notre application pour une utilisation plus réaliste.
+Nos samples de données ont besoins de clé pour se referencer entre elle.Donc on va attribuer une propriété userId a message.
+```
+let messages = {
+  1: {
+    id: '1',
+    text: 'Hello World',
+    userId: '1',
+  },
+  2: {
+    id: '2',
+    text: 'By World',
+    userId: '2',
+  },
+};
+```
+Passons au resolver, on peut utiliser notre argument parent pour récupérer notre userId afin que chaque message aie son propre user.
+```
+const resolvers = {
+  ...
+  Message: {
+    user: message => {
+      return users[message.userId];
+    },
+  },
+};
+```
+Nous allons maintenant creer les relations mais dans l'autre sens ( de users a message)
+```
+let users = {
+  1: {
+    id: '1',
+    username: 'Robin Wieruch',
+    messageIds: [1],
+  },
+  2: {
+    id: '2',
+    username: 'Dave Davids',
+    messageIds: [2],
+  },
+};
+```
+Modifions notre schema aussi
+```
+type User {
+    id: ID!
+    username: String!
+    messages: [Message!]
+  }
+
+```
+Comme notre entité user n'as pas de message mais des identifiants message, on peut écrire dans le resolver User. Ici on renvoie tous les messages d'un user.
+```
+User: {
+    messages: user => {
+      return Object.values(messages).filter(
+        message => message.userId === user.id,
+      );
+    },
+  },
 ```
