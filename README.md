@@ -6,7 +6,7 @@
 
 ###### Tous cela se trouve dans le repo de base a télécharger.
 
-## 1-Setup de base d'Appolo Server avec Express
+## 1 - Setup de base d'Appolo Server avec Express
 On va ici utiliser Appolo Server avec Express. Il existe de nombreuses
 libraires que l'on peut employé mais mon choix c'est porté sur ceux la car c'est
 sur eux que j'ai trouvé le plus de documentation et de tuto.
@@ -107,7 +107,7 @@ Et on ajoute cors a notre middleware express.
 app.use(cors());
 ```
 
-## 2-Types definition
+## 2 - Types definition
 
 - #### Le point d'exclamation
 
@@ -144,12 +144,12 @@ const resolvers = {
   Query: {
     me: () => {
       return {
-        username: 'Robin Wieruch',
+        username: 'Martin Malin',
       };
     },
     user: () => {
       return {
-        username: 'Dave Davids',
+        username: 'Pépé LePutois',
       };
     },
   },
@@ -159,7 +159,7 @@ Ensuite nous allons profiter de l'argument id qui arrive de notre query pour dé
 ```
 user: (parent, args) => {
       return {
-        username: 'Dave Davids',
+        username: 'Pépé LePutois',
       };
     },
   },
@@ -171,11 +171,11 @@ Maintenant pour rendre notre expemple plus parlant nous allons creer une map ave
 let users = {
   1: {
     id: '1',
-    username: 'Robin Wieruch',
+    username: 'Martin Malin',
   },
   2: {
     id: '2',
-    username: 'Dave Davids',
+    username: 'Pépé LePutois',
   },
 };
 const me = users[1];
@@ -214,8 +214,8 @@ const schema = gql`
     me: User
   }
 ```
-Ici notre query va nous donc nous renvoyez une liste d'users (grace au brackets carré).
-Dans cette liste aucun user ne peut etre null mais la liste peut revenir nul.(Sinon nous aurions pu indiquer **[User!]!**).
+Ici notre query va nous donc nous renvoyez une liste d'users (grâce au brackets carré).
+Dans cette liste aucun user ne peut être nul mais la liste peut revenir nul.(Sinon nous aurions pu indiquer **[User!]!**).
 Passons a notre resolver.
 ```
 const resolvers = {
@@ -233,4 +233,46 @@ const resolvers = {
 };
 ```
 Nous avons maintenant 3 query qui peuvent être utilisée dans dans notre Graphql Background. Toutes opèrent sur le même type User et ont chacune un resolvers propres.
-Toutes nos query sont regroupé dans sous une seule query type qui liste toutes les query de notre Grapqh Api. 
+Toutes nos query sont regroupé dans sous une seule query type qui liste toutes les query de notre Grapqhql Api.
+## 3 - Le resolver
+- #### Resolver par champ
+
+Dans cette section nous allons nous intéresser au coté resolver de notre schéma GraphQl avec Appolo server. Dans notre schéma nous avons définis des types, leurs relation et leur structure mais rien sur comment récupérer nos data. Voila ou notre resolvers arrive en scène.
+En js les resolvers sont groupé dans un objet Javascript souvent appelé le resolver map.
+Tous les query de notre query type doivent avoir un resolver.
+
+On va maintenant voir comment créer un resolver pour un champ.
+```
+const resolvers = {
+  Query: {
+    users: () => {
+      return Object.values(users);
+    },
+    user: (parent, { id }) => {
+      return users[id];
+    },
+    me: () => {
+      return me;
+    },
+  },
+  User: {
+    username: () => 'Ronflex',
+  },
+};
+```
+On va ensuite demander une liste de nos users sur le playground.
+```
+{
+  users {
+    username
+    id
+  }
+}
+```
+On peut remarquez que le résultat nous affiche des *usernames* **Ronflex** pour chaque user.
+Les resolvers peuvent agir sur des champs et ecraser les datas existantes, ici on a écraser le champ username avec notre resolvers.
+Si on ne donne aucune instructions sur le champ il prendra la valeur par défaut de User.
+
+- #### Les arguments
+
+Continuons avec les arguments de nos resolver
