@@ -901,8 +901,8 @@ sudo apt-get install postgresql
 ```
 On cree ensuite nos user, db et mdp pour notre db.
 ```
-sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" 
-sudo -u postgres psql -c "CREATE DATABASE postgres;" 
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+sudo -u postgres psql -c "CREATE DATABASE postgres;"
 ```
 On lance ensuite une commande pour lancer notre serveur au démarrage.
 ```
@@ -1031,3 +1031,151 @@ sequelize.sync().then(async () => {
 });
 ```
 Nous avons terminé le setup de notre base de données mais nous devons encore changer nos resolvers pour que notre application soit fonctionnelle.
+
+## 8 Connecter nos resolvers et notre Db
+Pour commencer nous allons aller dans notre fichier *src/resolvers/user.js* et changer les lignes suivantes pour pouvoir utiliser Sequelize.
+```
+export default {
+  Query: {
+    users: async (parent, args, { models }) => {
+      return await models.User.findAll();
+    },
+    user: async (parent, { id }, { models }) => {
+      return await models.User.findByPk(id);
+    },
+    me: async (parent, args, { models, me }) => {
+      return await models.User.findByPk(me.id);
+    },
+  },
+  User: {
+    messages: async (user, args, { models }) => {
+      return await models.Message.findAll({
+        where: {
+          userId: user.id,
+        },
+      });
+    },
+  },
+};
+```
+On utilise ici les fonction findall() et findByPk() pour trouver tous les messages specifique a un user.
+Avec le where on groupe les messages par userId.
+Fesons de meme avec notre fichier *src/reslvers/message.js*.
+```
+export default {
+  Query: {
+    messages: async (parent, args, { models }) => {
+      return await models.Message.findAll();
+    },
+    message: async (parent, { id }, { models }) => {
+      return await models.Message.findByPk(id);
+    },
+  },
+  Mutation: {
+    createMessage: async (parent, { text }, { me, models }) => {
+      return await models.Message.create({
+        text,
+        userId: me.id,
+      });
+    },
+    deleteMessage: async (parent, { id }, { models }) => {
+      return await models.Message.destroy({ where: { id } });
+    },
+  },
+  Message: {
+    user: async (message, args, { models }) => {
+      return await models.User.findByPk(message.userId);
+    },
+  },
+};
+```
+On remarque un changement crucial ici , l'utilisation d'async/await.
+En effet sequilize est un un ORM vasé sur les promise et nous renvoie une promesse Javascript.
+
+Nous allons maintenant ajouter ajouter manuellement deux users avec leurs messages.
+```
+const eraseDatabaseOnSync = true;
+sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
+  if (eraseDatabaseOnSync) {
+    createUsersWithMessages();
+  }
+  app.listen({ port: 8001 }, () => {
+    console.log('Apollo Server on http://localhost:8001/graphql');
+  });
+});
+const createUsersWithMessages = async () => {
+  await models.User.create(
+    {
+      username: 'Martin Malin',
+      messages: [
+        {
+          text: 'J'aime les frites',
+        },
+      ],
+    },
+    {
+      include: [models.Message],
+    },
+  );
+  await models.User.create(
+    {
+      username: 'Pépé LePutois',
+      messages: [
+        {
+          text: 'J'aime les frites',
+        },
+        {
+          text: 'J'aime le canard',
+        },
+      ],
+    },
+    {
+      include: [models.Message],
+    },
+  );
+};
+```
+Nous devons ensuite nous occupé de notre user **me**, il ne nous est plus utile car nos user viennent de la db.
+On va donc changer notre fichier '*src/models/user.js*' en lui ajoutant une methode.
+ ```
+ const user = (sequelize, DataTypes) => {
+   const User = sequelize.define('user', {
+     username: {
+       type: DataTypes.STRING,
+     },
+   });
+   User.associate = models => {
+     User.hasMany(models.Message, { onDelete: 'CASCADE' });
+   };
+   User.findByLogin = async login => {
+     let user = await User.findOne({
+       where: { username: login },
+     });
+     return user;
+   };
+   return User;
+ };
+ export default user;
+ ```
+
+Nous allons ensuite modifier notre context dans le fichier '*src/index.js*', on remplace notre me par le premier user de notre db '*Marin Malin*'.
+```
+const server = new ApolloServer({
+  typeDefs: schema,
+  resolvers,
+  context: async () => ({
+    models,
+    me: await models.User.findByLogin('rwieruch'),
+  }),
+});
+```
+Notre application est maintenant fonctionnelle.
+Nous allons verifier dans notre db si tous fonctionne.
+Dans le terminal:
+```
+psql postgres
+```
+```
+SELECT * from users;
+SELECT text from messages;
+```
