@@ -638,24 +638,24 @@ Nous pouvons ensuite passé nos échantillons de données dans le fichier *src/m
 let users = {
   1: {
     id: '1',
-    username: 'Robin Wieruch',
+    username: 'Martin Malin',
     messageIds: [1],
   },
   2: {
     id: '2',
-    username: 'Dave Davids',
+    username: 'Pépé LePutois',
     messageIds: [2],
   },
 };
 let messages = {
   1: {
     id: '1',
-    text: 'Hello World',
+    text: 'J'aime les frites',
     userId: '1',
   },
   2: {
     id: '2',
-    text: 'By World',
+    text: 'J'aime les canars',
     userId: '2',
   },
 };
@@ -755,3 +755,130 @@ Notre séparation technique est terminée mais nous n'en avons pas finis, en eff
 ##### Separation par Domaine
 
 Nous allons pour les sous dossiers schema et resolvers crée deux fichiers nommé *user.js* et *message.js*
+
+Nous allons ensuite comme précédemment fractionner nos fichier dans plusieurs fichiers.Commencons par notre schema.
+
+Dans le fichier *src/schema/user.js*
+```
+import { gql } from 'apollo-server-express';
+export default gql`
+  extend type Query {
+    users: [User!]
+    user(id: ID!): User
+    me: User
+  }
+  type User {
+    id: ID!
+    username: String!
+    messages: [Message!]
+  }
+`;
+```
+Meme chose pour *src/schema/message.js*
+```
+import { gql } from 'apollo-server-express';
+export default gql`
+  extend type Query {
+    messages: [Message!]!
+    message(id: ID!): Message!
+  }
+  extend type Mutation {
+    createMessage(text: String!): Message!
+    deleteMessage(id: ID!): Boolean!
+  }
+  type Message {
+    id: ID!
+    text: String!
+    user: User!
+  }
+`;
+```
+Chaque fichier décris maintenant son entité plutôt que tout les avoir dans un seul fichier.
+Nous avons rajouté un extend a nos query et nos mutation maintenant que nous avons plusieurs schémas grapql nous devons rajouter l'extend.
+Maintenant il ne nous reste plus qu'a définir le schéma qui regroupe nos deux schémas dans notre fichier *src/schema/index.js:*
+```
+import { gql } from 'apollo-server-express';
+import userSchema from './user';
+import messageSchema from './message';
+const linkSchema = gql`
+  type Query {
+    _: Boolean
+  }
+  type Mutation {
+    _: Boolean
+  }
+`;
+export default [linkSchema, userSchema, messageSchema];
+```
+Dans se fichier nos deux schémas sont fusionner avec linkSchema qui définis tous les type partagé par tous les schémas.
+Le champ underscore vide avec le champ Boolean est une obligation.
+
+On va faire la meme chose avec nos resolvers, on commence par le fichier *src/resolvers/user.js*.
+```
+export default {
+  Query: {
+    users: (parent, args, { models }) => {
+      return Object.values(models.users);
+    },
+    user: (parent, { id }, { models }) => {
+      return models.users[id];
+    },
+    me: (parent, args, { me }) => {
+      return me;
+    },
+  },
+  User: {
+    messages: (user, args, { models }) => {
+      return Object.values(models.messages).filter(
+        message => message.userId === user.id,
+      );
+    },
+  },
+};
+```
+On passe ensuite au fichier *src/resolvers/message.js*
+```
+import uuidv4 from 'uuid/v4';
+export default {
+  Query: {
+    messages: (parent, args, { models }) => {
+      return Object.values(models.messages);
+    },
+    message: (parent, { id }, { models }) => {
+      return models.messages[id];
+    },
+  },
+  Mutation: {
+    createMessage: (parent, { text }, { me, models }) => {
+      const id = uuidv4();
+      const message = {
+        id,
+        text,
+        userId: me.id,
+      };
+      models.messages[id] = message;
+      models.users[me.id].messageIds.push(id);
+      return message;
+    },
+    deleteMessage: (parent, { id }, { models }) => {
+      const { [id]: message, ...otherMessages } = models.messages;
+      if (!message) {
+        return false;
+      }
+      models.messages = otherMessages;
+      return true;
+    },
+  },
+  Message: {
+    user: (message, args, { models }) => {
+      return models.users[message.userId];
+    },
+  },
+};
+```
+Il ne nous reste plus que le fichier *src/resolvers/index.js* dans lequel on importe nos resolver et on les exportent.
+```
+import userResolvers from './user';
+import messageResolvers from './message';
+export default [userResolvers, messageResolvers];
+```
