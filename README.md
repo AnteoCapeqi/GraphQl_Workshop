@@ -429,12 +429,12 @@ Nos samples de données ont besoins de clé pour se referencer entre elle.Donc o
 let messages = {
   1: {
     id: '1',
-    text: 'Hello World',
+    text: 'J'aime les frites',
     userId: '1',
   },
   2: {
     id: '2',
-    text: 'By World',
+    text: 'J'aime les canards',
     userId: '2',
   },
 };
@@ -455,12 +455,12 @@ Nous allons maintenant creer les relations mais dans l'autre sens ( de users a m
 let users = {
   1: {
     id: '1',
-    username: 'Robin Wieruch',
+    username: 'Martin Malin',
     messageIds: [1],
   },
   2: {
     id: '2',
-    username: 'Dave Davids',
+    username: 'Pépé LePutois',
     messageIds: [2],
   },
 };
@@ -484,3 +484,116 @@ User: {
     },
   },
 ```
+## Les Query et les mutations
+Jusqu'ici nous avons definis nos query avec notre schema graphql en utilisant deux type lié entre elles.
+Cela foncionne tres bien car nous avons setup nos resolvers. Nous allons maintenant voir ensemble les mutations dans graphql.
+##### Create message
+On va commencer par créer notre premier mutation createMessage.
+```
+const schema = gql`
+  type Query {
+    users: [User!]
+    user(id: ID!): User
+    me: User
+    messages: [Message!]!
+    message(id: ID!): Message!
+  }
+  type Mutation {
+    createMessage(text: String!): Message!
+  }
+  ...
+`;
+```
+Nous avons ici un type mutation qui va nous permettre de stocker toutes nos opérations pour inscrire de la données plutôt que de la lire.
+Dans notre cas la mutation **createMessage** accepte un text non nul comme argument et renvoie le message créé.
+Comme a chaque fois on crée un resolver correspondant.
+```
+Mutation: {
+    createMessage: (parent, { text }, { me }) => {
+      const message = {
+        text,
+        userId: me.id,
+      };
+      return message;
+    },
+  },
+```
+Le resolver de la mutation as accès au texte grâce au second arguments et a accès a notre user me grâce au troisième qui représente le contexte.
+L'argument parent ici n'est pas utilisé mais il faut l'indiquer.
+Il nous manque juste une chose, l'attribution d'un Id unique pour chacun de nos nouveaux messages.
+Pour cela nous allons installer une libraires qui va nous y aider.
+```
+npm install uuid --save
+```
+On l'importe ensuite dans notre fichier index.js
+```
+import uuidv4 from 'uuid/v4';
+```
+On peut maintenant attribuer a chaque message un id unique
+```
+const resolvers = {
+  Query: {
+    ...
+  },
+  Mutation: {
+    createMessage: (parent, { text }, { me }) => {
+      const id = uuidv4();
+      const message = {
+        id,
+        text,
+        userId: me.id,
+      };
+      return message;
+    },
+  },
+  ...
+}
+```
+Jusque la notre mutation a creéé un objet message et le renvoie dans notre Api.
+La plupart du temp vous allez les utilisez pour manipuler votre base de donées mais ici nous allons seulement modifier nos deux variable messages et users. Nous allons devoir mettre a jour la liste des message disponibles et la liste des messageId doit possedez de nouveaux Id.
+```
+Mutation: {
+    createMessage: (parent, { text }, { me }) => {
+      const id = uuidv4();
+      const message = {
+        id,
+        text,
+        userId: me.id,
+      };
+      messages[id] = message;
+      users[me.id].messageIds.push(id);
+      return message;
+    },
+  },
+```
+On peut maintenant tester notre mutation dans le playground
+```
+mutation {
+  createMessage (text: "Hello GraphQL!") {
+    id
+    text
+  }
+}
+```
+##### Delete message
+On va maintenant créer une mutation pour supprimer un message.
+```
+type Mutation {
+    createMessage(text: String!): Message!
+    deleteMessage(id: ID!): Boolean!
+  }
+```
+La mutation nous renvoie ici un Boolean pour voir si la suppression est un succès ou un échec.Il prend comme input
+un identifiant de message.
+On passe au resolver
+```
+deleteMessage: (parent, { id }) => {
+      const { [id]: message, ...otherMessages } = messages;
+      if (!message) {
+        return false;
+      }
+      messages = otherMessages;
+      return true;
+    },
+```
+Ici si il n'y as pas de message on nous retourne false, si il y en a un on crée un objet message sans celui sectionner et on remplace l'ancien objet message par le nouveau.
