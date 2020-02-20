@@ -352,7 +352,7 @@ Chaque resolvers peut accéder au context en l'utilisant comme troisièmes argum
 Ce dernier n'est pas très utilisé car il donne que des informations interne a graphql.
 Il est surtout utilisé pour du debbuging ou du tracking, nous verrons ça plus loin.
 
-## 3 - Les relations entre les types
+## 4 Les relations entre les types
 ##### Un second type : Message
 Dans cette section nous allons rajouter un grapqhql type *Message* et le faire interagir avec notre User type.
 Dans notre application les user peuvent poster des messages. On va rajouter deux query et un type message.
@@ -487,7 +487,7 @@ User: {
     },
   },
 ```
-## Les Query et les mutations
+## 5 Les Query et les mutations
 Jusqu'ici nous avons definis nos query avec notre schema graphql en utilisant deux type lié entre elles.
 Cela foncionne tres bien car nous avons setup nos resolvers. Nous allons maintenant voir ensemble les mutations dans graphql.
 ##### Create message
@@ -601,7 +601,7 @@ deleteMessage: (parent, { id }) => {
     },
 ```
 Ici si il n'y as pas de message on nous retourne false, si il y en a un on crée un objet message sans celui sectionner et on remplace l'ancien objet message par le nouveau.
-## Le Stitching
+## 6 Le Stitching
 Le stiching dans notre schéma graphql est une features très pratique.
 Elle permet de fusionner plusieurs scheama en un seul. Pour l'instant nous n'avons qu'un seul schemas mais nous pourrions avoir un schema propre a message et a user.
 
@@ -888,7 +888,7 @@ export default [userResolvers, messageResolvers];
 
 Vous avez maintenant un point de départ pour votre application graphql avec node.js.
 
-## Postgresql & Sequelize
+## 7 Postgresql & Sequelize
 
 Nous avons une application fonctionnelle mais toujours pas de base de données. Nous y voila!
 
@@ -1179,3 +1179,9 @@ psql postgres
 SELECT * from users;
 SELECT text from messages;
 ```
+Nous avons bien les bonnes datas. Notre setup de base est terminé.
+
+## 9 Sources
+
+- The road to grapql de Robin Wieruch.
+- Pluralsight : Tuto express, sequilize, GraphQL.
