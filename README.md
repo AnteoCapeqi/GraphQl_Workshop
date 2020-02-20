@@ -550,7 +550,8 @@ const resolvers = {
 }
 ```
 Jusque la notre mutation a creéé un objet message et le renvoie dans notre Api.
-La plupart du temp vous allez les utilisez pour manipuler votre base de donées mais ici nous allons seulement modifier nos deux variable messages et users. Nous allons devoir mettre a jour la liste des message disponibles et la liste des messageId doit possedez de nouveaux Id.
+La plupart du temps vous allez les utilisez pour manipuler votre base de donées mais ici nous allons seulement modifier nos deux variable messages et users.
+Nous allons devoir mettre a jour la liste des message disponibles et la liste des messageId doit possédez de nouveaux Id.
 ```
 Mutation: {
     createMessage: (parent, { text }, { me }) => {
@@ -597,3 +598,160 @@ deleteMessage: (parent, { id }) => {
     },
 ```
 Ici si il n'y as pas de message on nous retourne false, si il y en a un on crée un objet message sans celui sectionner et on remplace l'ancien objet message par le nouveau.
+## Le Stitching
+Le stiching dans notre schéma graphql est une features très pratique.
+Elle permet de fusionner plusieurs scheama en un seul. Pour l'instant nous n'avons qu'un seul schemas mais nous pourrions avoir un schema propre a message et a user.
+
+Nous allons commencer par une séparation technique et puis nous passerons sur une séparation par domaine.
+
+##### Separation Technique
+Pour commencer nous allons créer dans notre dossier *src* trois sous dossiers respectivement nommé models, schema et resolvers. Pour chaque sous dossier nous allons créer un fichier index.js.
+
+On va ensuite importé l'ensemble de nos fichiers dans notre index.js principal.
+Voici ce qui doit se trouver dans le fichier '*src/index.js*'
+```
+import cors from 'cors';
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import schema from './schema';
+import resolvers from './resolvers';
+import models from './models';
+const app = express();
+app.use(cors());
+const server = new ApolloServer({
+  typeDefs: schema,
+  resolvers,
+  context: {
+    models,
+    me: models.users[1],
+  },
+});
+server.applyMiddleware({ app, path: '/graphql' });
+app.listen({ port: 8001 }, () => {
+  console.log('Apollo Server on http://localhost:8001/graphql');
+});
+```
+Nous avons ici ajouter les models dans notre context. Nos modele sont nos acces au données ici se sont des variable mais elle pourrait bien être d'une db ou d'une autre Api.
+
+Nous pouvons ensuite passé nos échantillons de données dans le fichier *src/models/index.js*
+```
+let users = {
+  1: {
+    id: '1',
+    username: 'Robin Wieruch',
+    messageIds: [1],
+  },
+  2: {
+    id: '2',
+    username: 'Dave Davids',
+    messageIds: [2],
+  },
+};
+let messages = {
+  1: {
+    id: '1',
+    text: 'Hello World',
+    userId: '1',
+  },
+  2: {
+    id: '2',
+    text: 'By World',
+    userId: '2',
+  },
+};
+export default {
+  users,
+  messages,
+};
+```
+Comme nous avons placé nos modeles dans notre context il seront disponibles pour chaque resolvers.
+En parlant du loup on peut faire comme pour precedement et aller placer nos resolvers dans le fichier *src/resolvers/index.js*. Nous devons cependant ajouter notre model a nos fonction pour qu'il fonctionne.
+```
+import uuidv4 from 'uuid/v4';
+export default {
+  Query: {
+    users: (parent, args, { models }) => {
+      return Object.values(models.users);
+    },
+    user: (parent, { id }, { models }) => {
+      return models.users[id];
+    },
+    me: (parent, args, { me }) => {
+      return me;
+    },
+    messages: (parent, args, { models }) => {
+      return Object.values(models.messages);
+    },
+    message: (parent, { id }, { models }) => {
+      return models.messages[id];
+    },
+  },
+  Mutation: {
+    createMessage: (parent, { text }, { me, models }) => {
+      const id = uuidv4();
+      const message = {
+        id,
+        text,
+        userId: me.id,
+      };
+      models.messages[id] = message;
+      models.users[me.id].messageIds.push(id);
+      return message;
+    },
+    deleteMessage: (parent, { id }, { models }) => {
+      const { [id]: message, ...otherMessages } = models.messages;
+      if (!message) {
+        return false;
+      }
+      models.messages = otherMessages;
+      return true;
+    },
+  },
+  User: {
+    messages: (user, args, { models }) => {
+      return Object.values(models.messages).filter(
+        message => message.userId === user.id,
+      );
+    },
+  },
+  Message: {
+    user: (message, args, { models }) => {
+      return models.users[message.userId];
+    },
+  },
+};
+```
+Les resolvers reçoivent les infos du model via le context(troisième arguments) plutôt que de le recevoir directement de notre échantillons de donnée.
+
+Enfin nous pouvons placer nos schémas dans le fichier *src/schema/index.js*
+```
+import { gql } from 'apollo-server-express';
+export default gql`
+  type Query {
+    users: [User!]
+    user(id: ID!): User
+    me: User
+    messages: [Message!]!
+    message(id: ID!): Message!
+  }
+  type Mutation {
+    createMessage(text: String!): Message!
+    deleteMessage(id: ID!): Boolean!
+  }
+  type User {
+    id: ID!
+    username: String!
+    messages: [Message!]
+  }
+  type Message {
+    id: ID!
+    text: String!
+    user: User!
+  }
+`;
+```
+Notre séparation technique est terminée mais nous n'en avons pas finis, en effet nous avons toujours un seul schémas pour toutes nôtres application.
+
+##### Separation par Domaine
+
+Nous allons pour les sous dossiers schema et resolvers crée deux fichiers nommé *user.js* et *message.js*
