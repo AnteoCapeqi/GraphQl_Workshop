@@ -348,3 +348,78 @@ Chaque resolvers peut accéder au context en l'utilisant comme troisièmes argum
 ##### L'argument infos
 Ce dernier n'est pas très utilisé car il donne que des informations interne a graphql.
 Il est surtout utilisé pour du debbuging ou du tracking, nous verrons ça plus loin.
+
+## 3 - Les relations entre les types
+##### Un second type : Message
+Dans cette section nous allons rajouter un grapqhql type *Message* et le faire interagir avec notre User type.
+Dans notre application les user peuvent poster des messages. On va rajouter deux query et un type message.
+```
+const schema = gql`
+  type Query {
+    users: [User!]
+    user(id: ID!): User
+    me: User
+    messages: [Message!]!
+    message(id: ID!): Message!
+  }
+  type User {
+    id: ID!
+    username: String!
+  }
+  type Message {
+    id: ID!
+    text: String!
+  }
+`;
+```
+On rajoute ensuite une variable contenant nos messages ainsi que comme toujours nos resolvers correspondant.
+ ```
+ let messages = {
+  1: {
+    id: '1',
+    text: 'J'aime les frites',
+  },
+  2: {
+    id: '2',
+    text: 'J'aime les canards',
+  },
+};
+ ```
+ ```
+ messages: () => {
+      return Object.values(messages);
+    },
+    message: (parent, { id }) => {
+      return messages[id];
+    },
+ ```
+ Dans le playground on peut voir que les données sont bien la.On va ensuite creer une relation entre
+ nos deux types.
+ ```
+ type Message {
+     id: ID!
+     text: String!
+     user: User!
+   }
+ ```
+Comme nos message n'ont pas d'entité user dans notre model nous allons devoir creer un resolver pour celui ci.
+```
+Message: {
+    user: (parent, args, { me }) => {
+      return me;
+    },
+  },
+```
+Pour tester cela nous allons entré une query pour verifier que tous est bien juste
+```
+{
+  message(id: "1") {
+    id
+    text
+    user {
+      id
+      username
+    }
+  }
+}
+```
