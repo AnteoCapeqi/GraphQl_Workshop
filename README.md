@@ -1,4 +1,7 @@
 # GraphQl_Workshop
+Ce repo a pour objectif de vous aider a aprehender les concept de GraphQL et de postgresql.
+N'hesitez pas a me renvoyer vos avis et retour, je serais ravis d'upgrade le repo pour faciliter sa compréhension.
+
 ## Prérequis
 - Installer NodeJs
 - Installer Nodeamon
@@ -892,7 +895,31 @@ Nous avons une application fonctionnelle mais toujours pas de base de données. 
 Dans cette section nous allons setup notre db postgresql avec comme **ORM**(Object-relational mapping) Sequelize.
 Un **ORM** permet au développeurs de manipuler la db avec du Javascript plutôt qu'avec un Query langage.
 
-On va commencer par installer Sequelize(qui est le client pour postgres pour node.js).
+On va commencer par installer Postgresql sur notre machine.
+```
+sudo apt-get install postgresql
+```
+On cree ensuite nos user, db et mdp pour notre db.
+```
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" 
+sudo -u postgres psql -c "CREATE DATABASE postgres;" 
+```
+On lance ensuite une commande pour lancer notre serveur au démarrage.
+```
+update-rc.d postgresql enable
+```
+
+On peut ensuite lancer notre serveur.(On utilise stop pour stopper notre db)
+```
+service postgresql start
+```
+
+Pour verifier que tous fonctionnne on lance la commande
+```
+sudo service --status-all
+```
+
+Installons ensuite Sequelize(qui est le client pour postgres pour node.js).
 ```
 npm install pg sequelize --save
 ```
@@ -1003,3 +1030,4 @@ sequelize.sync().then(async () => {
   });
 });
 ```
+Nous avons terminé le setup de notre base de données mais nous devons encore changer nos resolvers pour que notre application soit fonctionnelle.
