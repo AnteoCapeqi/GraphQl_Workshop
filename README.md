@@ -1,18 +1,18 @@
 # GraphQl_Workshop
-Ce repo a pour objectif de vous aider a aprehender les concept de GraphQL et de postgresql.
-N'hesitez pas a me renvoyer vos avis et retour, je serais ravis d'upgrade le repo pour faciliter sa compréhension.
+Ce repo a pour objectif de vous aider a apprehender les concepts de GraphQL et de postgresql.
+N'hesitez pas a me renvoyer vos avis et retours, je serais ravi d'upgrader le repo pour faciliter sa compréhension.
 
 ## Prérequis
 - Installer NodeJs
 - Installer Nodeamon
 - Installer Babel ( Plus les Presets)
 
-###### Tous cela se trouve dans le repo de base a télécharger.
+###### Tout cela se trouve dans le repo de base a télécharger.
 
 ## 1 - Setup de base d'Appolo Server avec Express
 On va ici utiliser Appolo Server avec Express. Il existe de nombreuses
-libraires que l'on peut employé mais mon choix c'est porté sur ceux la car c'est
-sur eux que j'ai trouvé le plus de documentation et de tuto.
+librairies que l'on peut employer mais mon choix s'est porté sur ceux là car c'est
+sur eux que j'ai trouvé le plus de documentations et de tutos.
 
 #### Appolo Server
 
@@ -24,16 +24,16 @@ sur eux que j'ai trouvé le plus de documentation et de tuto.
 
 #### Premiers pas
 
-Pour commencer on va déjà les importer dans notre fichier '*index.js*'
+Pour commencer, on va déjà les importer dans notre fichier '*index.js*'
 
 ```
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 ```
-Ensuite nous allons utiliser la fonction *applyMiddleware* pour lancer notre serveur
+Ensuite, nous allons utiliser la fonction *applyMiddleware* pour lancer notre serveur
 avec Express.
 Pour cela nous allons créer une variable *server* dans laquelle on initialise notre
-serveur Appolo avec un *schemas* et un *resolvers* (Nous les implémenterons un peu
+serveur Appolo avec un *schema* et un *resolvers* (Nous les implémenterons un peu
 plus tard.)
 ```
 const app = express();
@@ -48,8 +48,8 @@ app.listen({ port: 8001 }, () => {
   console.log('Apollo Server on http://localhost:8001/graphql');
 });
 ```
-Passons au schema. Le schemas consiste en un ensemble de type definition
-(Des données qui ont donc une fonction prédéfinies comme un objet, query ,scalar,...)
+Passons au schema. Le schema consiste en un ensemble de type definition
+(Des données qui ont donc une fonction prédéfinie comme un objet, query ,scalar,...)
 Nous avons donc ici un Query type avec un champ **me** de type **User** et ou **User** a comme champ un scalar type nommé **username**(Ici un string).
 ```
 const schema = gql`
@@ -67,10 +67,10 @@ import { ApolloServer, gql } from 'apollo-server-express';
 ```
 Passons a notre resolver. Le resolver permet de récupérer les données qui composent
 notre schema.
-La source de donnée n'est pas importante, elle peuvent venir d'une base de donnée ou d'une autre Api.
-Ce qui est le point de fort de graphql par rapport au autres langages de base de donnée.
+La source de données n'est pas importante, elle peut venir d'une base de données ou d'une autre Api.
+Ce qui est le point de fort de graphql par rapport aux autres langages de base de données.
 
-Les resolvers sont des fonctions qui renvoient les données de nos champs graphql dans le schema. Ici le resolver ne renvoie qu'un seul objet **User** appelé *Martin Malin*.
+Les resolvers sont des fonctions qui renvoient les données de nos champs graphql dans le schema. Ici, le resolver ne renvoie qu'un seul objet **User** appelé *Martin Malin*.
 
 ```
 const resolvers = {
@@ -83,9 +83,9 @@ const resolvers = {
   },
 };
 ```
-Cela fait notre Api devrait fonctionner sur le port 8001. On tape donc dans notre navigateur *http://localhost:8000/graphql*
+Cela fait que notre Api devrait fonctionner sur le port 8001. On tape donc dans notre navigateur *http://localhost:8000/graphql*
 
-On introduis ensuite notre premiere query
+On introduit ensuite notre premier query
 ```
 {
   me {
@@ -99,7 +99,7 @@ et nous pouvons continuer.
 #### Cors
 
 Cette partie est ***optionnelle***, mais j’apprécie beaucoup cors. Cors est un acronyme
-pour **Cross-Origin Resource Sharing** ce qui ici va nous permettre d’émuler des requêtes Http depuis d'autre domaine que le notre.
+pour **Cross-Origin Resource Sharing** ce qui ici va nous permettre d’émuler des requêtes Http depuis d'autre domaines que le notre.
 
 On installe Cors
 ```
@@ -118,16 +118,16 @@ app.use(cors());
 
 #### Le point d'exclamation
 
-Dans cette section on va voir les types définition et la manière dont elle définisse
-notre schéma. Un schéma Graphql est définis par ces Types, les relations entre eux et
-leurs structure. Par conséquent Graphql utilise un **Shema Defition Langage**(SDL)
-Cependant le schéma ne définis la provenance de nos données, ce rôle est laissé au
+Dans cette section, on va voir les types définition et la manière dont elles définissent
+notre schéma. Un schéma Graphql est défini par ces Types, les relations entre eux et
+leurs structures. Par conséquent, Graphql utilise un **Shema Defition Langage**(SDL)
+Cependant, le schéma ne défini la provenance de nos données, ce rôle est laissé au
 resolver.
 
-Dans notre schéma vous pouvez remarquez le point d'exclamation pour le champ username.
-Cela signifie qu'il ne peut être ni null ni indéfinis.
+Dans notre schéma, vous pouvez remarquer le point d'exclamation pour le champ username.
+Cela signifie qu'il ne peut être ni null ni indéfin.
 
-On va ajouter un champ a notre schéma et utiliser les argument Graphql pour gérer notre champ user.
+On va ajouter un champ a notre schéma et utiliser les arguments Graphql pour gérer notre champ user.
 ```
 const schema = gql`
   type Query {
@@ -136,7 +136,7 @@ const schema = gql`
   }
 ```
 Les arguments Graphql sont très utiles pour affiner nos query. Nous devons aussi définir le type, qui dans ce cas est un Id non nul pour récupérer notre user.
-Notre query nous renvoie donc un User type qui peut être nul car une entité user sans id valable peut être trouvé.
+Notre query nous renvoie donc un User type qui peut être nul car une entité user sans id valable peut être trouvée.
 ```
 type User {
     id: ID!
@@ -144,7 +144,7 @@ type User {
   }
 ```
 
-Une fois que nous avons setup notre schéma nous pouvons ensuite nous occupé de notre resolver.On va donc créer un resolver pour notre User.
+Une fois que nous avons setup notre schéma, nous pouvons ensuite nous occuper de notre resolver. On va donc créer un resolver pour notre User.
 
 ```
 const resolvers = {
@@ -162,7 +162,7 @@ const resolvers = {
   },
 };
 ```
-Ensuite nous allons profiter de l'argument id qui arrive de notre query pour décider quel User renvoyé. tous les arguments sont dans le second argument de notre fonction.
+Ensuite, nous allons profiter de l'argument id qui arrive de notre query pour décider quel User renvoyé. tous les arguments sont dans le second argument de notre fonction.
 ```
 user: (parent, args) => {
       return {
@@ -172,8 +172,8 @@ user: (parent, args) => {
   },
 };
 ```
-Le premier argument appelé parent ne doit pas vous inquietez maintenant on verra plus loin comment l'utiliser.
-Maintenant pour rendre notre expemple plus parlant nous allons creer une map avec un sample d'user et renvoyer un user avec l'id approprié.
+Le premier argument appelé parent ne doit pas vous inquieter maintenant nous verrons plus loin comment l'utiliser.
+Maintenant pour rendre notre exemple plus parlant, nous allons créer une map avec un sample d'user et renvoyer un user avec l'id approprié.
 ```
 let users = {
   1: {
@@ -212,7 +212,7 @@ On nous renvoie bien deux entités différentes. Merci les arguments graphql ;-)
 
 #### Une liste d'users
 
-Nous allons maintenant creer une troisieme query qui va nous permettre d'afficher une liste de l'ensemble de nos users.
+Nous allons maintenant créer une troisieme query qui va nous permettre d'afficher une liste de l'ensemble de nos users.
 ```
 const schema = gql`
   type Query {
@@ -221,8 +221,8 @@ const schema = gql`
     me: User
   }
 ```
-Ici notre query va nous donc nous renvoyez une liste d'users (grâce au brackets carré).
-Dans cette liste aucun user ne peut être nul mais la liste peut revenir nul.(Sinon nous aurions pu indiquer **[User!]!**).
+Ici, notre query va nous donc nous renvoyer une liste d'users (grâce au brackets carré).
+Dans cette liste, aucun user ne peut être nul mais la liste peut revenir nul.(Sinon nous aurions pu indiquer **[User!]!**).
 Passons a notre resolver.
 ```
 const resolvers = {
@@ -239,13 +239,13 @@ const resolvers = {
   },
 };
 ```
-Nous avons maintenant 3 query qui peuvent être utilisée dans dans notre Graphql Background. Toutes opèrent sur le même type User et ont chacune un resolvers propres.
-Toutes nos query sont regroupé dans sous une seule query type qui liste toutes les query de notre Grapqhql Api.
+Nous avons maintenant 3 query qui peuvent être utilisés dans notre Graphql Background. Tous opèrent sur le même type User et ont chacun un resolvers propres.
+Tous nos query sont regroupés sous une seule query type qui liste toutes les query de notre Grapqhql Api.
 ## 3 - Le resolver
 #### Resolver par champ
 
-Dans cette section nous allons nous intéresser au coté resolver de notre schéma GraphQl avec Appolo server. Dans notre schéma nous avons définis des types, leurs relation et leur structure mais rien sur comment récupérer nos data. Voila ou notre resolvers arrive en scène.
-En js les resolvers sont groupé dans un objet Javascript souvent appelé le resolver map.
+Dans cette section, nous allons nous intéresser au coté resolver de notre schéma GraphQl avec Appolo server. Dans notre schéma, nous avons défini des types, leurs relation et leur structure mais rien sur comment récupérer nos data. Voila où notre resolvers arrive en scène.
+En JS, les resolvers sont groupés dans un objet Javascript souvent appelé le resolver map.
 Tous les query de notre query type doivent avoir un resolver.
 
 On va maintenant voir comment créer un resolver pour un champ.
@@ -276,15 +276,15 @@ On va ensuite demander une liste de nos users sur le playground.
   }
 }
 ```
-On peut remarquez que le résultat nous affiche des *usernames* **Ronflex** pour chaque user.
+On peut remarquer que le résultat nous affiche des *usernames* **Ronflex** pour chaque user.
 Les resolvers peuvent agir sur des champs et ecraser les datas existantes, ici on a écraser le champ username avec notre resolvers.
 Si on ne donne aucune instructions sur le champ il prendra la valeur par défaut de User.
 
 #### Les arguments
 ##### L'Argument parent
-Continuons avec les arguments de nos resolvers. Précédemment nous avons vu que le second arguments de notre fonction récupère l'argument qui est retourné d'une query. C'est comme cela que nous avons pu récupérer notre id pour notre user depuis notre query.
+Continuons avec les arguments de nos resolvers. Précédemment, nous avons vu que le second argument de notre fonction récupère l'argument qui est retourné d'une query. C'est comme cela que nous avons pu récupérer notre id pour notre user depuis notre query.
 ``user: (parent, { id })``
-Le premier argument est appelé l'argument parent(ou root argument) et il renvoie toujours le champ résolu précédemment. Regardons ensemble le nouveaux resolver pour notre champ username.
+Le premier argument est appelé l'argument parent (ou root argument) et il renvoie toujours le champ résolu précédemment. Regardons ensemble le nouveau resolver pour notre champ username.
 ```
 User: {
     username: parent => {
@@ -1170,7 +1170,7 @@ const server = new ApolloServer({
 });
 ```
 Notre application est maintenant fonctionnelle.
-Nous allons verifier dans notre db si tous fonctionne.
+Nous allons vérifier dans notre db si tout fonctionne.
 Dans le terminal:
 ```
 psql postgres
