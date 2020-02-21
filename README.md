@@ -291,17 +291,17 @@ User: {
       return parent.username;
     }
 ```
-On peut voir dans le playground que nos username sont retouné a la normale. Notre resolver va donc allé résoudre le resolver User avant de résoudre le username, nous avons donc les username de notre objet user.
-Pour être plus explicite dans notre resolver on peut remplacer '**parent**' par '**user**'.
+On peut voir dans le playground que nos username sont retounés a la normale. Notre resolver va donc aller résoudre le resolver User avant de résoudre le username, nous avons donc les username de notre objet user.
+Pour être plus explicite, dans notre resolver on peut remplacer '**parent**' par '**user**'.
 ```
 User: {
     username: user => {
       return user.username;
     }
 ```
-Dans ce cas si notre resolver n'est pas très utile car il reproduit le fonctionnement par défaut de notre GraphQl resolver.
+Dans ce cas, notre resolver n'est pas très utile car il reproduit le fonctionnement par défaut de notre GraphQl resolver.
 Mais nous pouvons constater que ce resolvers nous apporte beaucoup de flexibilité avec nos data.
-Nous pouvons récupérer des donnée et les manipuler plus facilement.
+Nous pouvons récupérer des données et les manipuler plus facilement.
 ```
 const resolvers = {
   ...
@@ -310,16 +310,16 @@ const resolvers = {
   },
 };
 ```
-Comme ici ou l'on affiche notre username avec le nom et prénom grâce a un template.
-Nous allons laissé le resolvers username de coté pour l'instant car il ne fait que reproduire le fonctionnement par défaut d'Appolo server.
-Ils sont appelé les resolver par défaut.
+Comme ici où l'on affiche notre username avec le nom et prénom grâce a un template.
+Nous allons laisser le resolvers username de coté pour l'instant car il ne fait que reproduire le fonctionnement par défaut d'Appolo server.
+Ils sont appelés les resolver par défaut.
 ##### L'argument context
 Regardons ensuite les autres arguments que notre fonction peut avoir
 ```
 (parent, args, context, info) => { ... }
 ```
 Notre troisième argument ici est le **context**. Le contexte est très pratique car il nous permet de récupérer des data depuis l’extérieur de notre fonction resolver.
-Imaginons que l'un de nos utilisateur est connecté depuis un autre service que celui de votre application et que vous recèperiez cette data d'autre part. Vous pouvez injectez cette data dans le **context**. ou elle sera récupérer. Nous allons supprimer la ligne ``let me =... `` et l'introduire dans l’initialisation de notre Appolo server.
+Imaginons que l'un de nos utilisateurs est connecté depuis un autre service que celui de votre application et que vous recuperez cette data d'autre part. Vous pouvez injecter cette data dans le **context**. ou elle sera récupérée. Nous allons supprimer la ligne ``let me =... `` et l'introduire dans l’initialisation de notre Appolo server.
 ```
 const server = new ApolloServer({
   typeDefs: schema,
@@ -329,7 +329,7 @@ const server = new ApolloServer({
   },
 });
 ```
-Ensuite on envoie le context comme troisièmes arguments de notre resolver.
+Ensuite on envoie le context comme troisième argument de notre resolver.
 ```
 const resolvers = {
   Query: {
@@ -346,16 +346,16 @@ const resolvers = {
 }
 ```
 Le context est le même pour chaque chaque resolvers.
-Chaque resolvers peut accéder au context en l'utilisant comme troisièmes arguments.
+Chaque resolvers peut accéder au context en l'utilisant comme troisième argument.
 
 ##### L'argument infos
-Ce dernier n'est pas très utilisé car il donne que des informations interne a graphql.
+Ce dernier n'est pas très utilisé car il ne donne que des informations interne a graphql.
 Il est surtout utilisé pour du debbuging ou du tracking, nous verrons ça plus loin.
 
 ## 4 Les relations entre les types
 ##### Un second type : Message
-Dans cette section nous allons rajouter un grapqhql type *Message* et le faire interagir avec notre User type.
-Dans notre application les user peuvent poster des messages. On va rajouter deux query et un type message.
+Dans cette section, nous allons rajouter un graphql type *Message* et le faire interagir avec notre User type.
+Dans notre application, les user peuvent poster des messages. On va rajouter deux query et un type message.
 ```
 const schema = gql`
   type Query {
@@ -375,7 +375,7 @@ const schema = gql`
   }
 `;
 ```
-On rajoute ensuite une variable(sample de données) contenant nos messages ainsi que comme toujours nos resolvers correspondant.
+On rajoute ensuite une variable (sample de données) contenant nos messages ainsi que comme toujours nos resolvers correspondant.
  ```
  let messages = {
   1: {
@@ -396,7 +396,7 @@ On rajoute ensuite une variable(sample de données) contenant nos messages ainsi
       return messages[id];
     },
  ```
- Dans le playground on peut voir que les données sont bien la.On va ensuite creer une relation entre
+ Dans le playground, on peut voir que les données sont bien là. On va ensuite créer une relation entre
  nos deux types.
  ```
  type Message {
@@ -405,7 +405,7 @@ On rajoute ensuite une variable(sample de données) contenant nos messages ainsi
      user: User!
    }
  ```
-Comme nos message n'ont pas d'entité user dans notre model nous allons devoir creer un resolver pour celui ci.
+Comme nos message n'ont pas d'entité user dans notre model, nous allons devoir créer un resolver pour celui-ci.
 ```
 Message: {
     user: (parent, args, { me }) => {
@@ -413,7 +413,7 @@ Message: {
     },
   },
 ```
-Pour tester cela nous allons entré une query pour vérifier que tous est bien juste
+Pour tester cela, nous allons entrer une query pour vérifier que tout est bien juste
 ```
 {
   message(id: "1") {
@@ -426,8 +426,8 @@ Pour tester cela nous allons entré une query pour vérifier que tous est bien j
   }
 }
 ```
-Nous avons bien les bon résultats dans le playground, nous pouvons maintenant adapter notre application pour une utilisation plus réaliste.
-Nos samples de données ont besoins de clé pour se referencer entre elle.Donc on va attribuer une propriété userId a message.
+Nous avons bien les bons résultats dans le playground, nous pouvons maintenant adapter notre application pour une utilisation plus réaliste.
+Nos samples de données ont besoin de clefs pour se referencer entre elles. Donc, on va attribuer une propriété userId a message.
 ```
 let messages = {
   1: {
@@ -442,7 +442,7 @@ let messages = {
   },
 };
 ```
-Passons au resolver, on peut utiliser notre argument parent pour récupérer notre userId afin que chaque message aie son propre user.
+Passons au resolver, on peut utiliser notre argument parent pour récupérer notre userId afin que chaque message ait son propre user.
 ```
 const resolvers = {
   ...
@@ -453,7 +453,7 @@ const resolvers = {
   },
 };
 ```
-Nous allons maintenant creer les relations mais dans l'autre sens ( de users a message)
+Nous allons maintenant créer les relations mais dans l'autre sens (de users a message)
 ```
 let users = {
   1: {
@@ -477,7 +477,7 @@ type User {
   }
 
 ```
-Comme notre entité user n'as pas de message mais des identifiants message, on peut écrire dans le resolver User. Ici on renvoie tous les messages d'un user.
+Comme notre entité user n'a pas de message mais des identifiants message, on peut écrire dans le resolver User. Ici on renvoie tous les messages d'un user.
 ```
 User: {
     messages: user => {
@@ -488,8 +488,8 @@ User: {
   },
 ```
 ## 5 Les Query et les mutations
-Jusqu'ici nous avons definis nos query avec notre schema graphql en utilisant deux type lié entre elles.
-Cela foncionne tres bien car nous avons setup nos resolvers. Nous allons maintenant voir ensemble les mutations dans graphql.
+Jusqu'ici, nous avons defini nos query avec notre schema graphql en utilisant deux types lié entre elles.
+Cela fonctionne tres bien car nous avons setup nos resolvers. Nous allons maintenant voir ensemble les mutations dans graphql.
 ##### Create message
 On va commencer par créer notre premier mutation createMessage.
 ```
@@ -507,9 +507,9 @@ const schema = gql`
   ...
 `;
 ```
-Nous avons ici un type mutation qui va nous permettre de stocker toutes nos opérations pour inscrire de la données plutôt que de la lire.
+Nous avons ici un type mutation qui va nous permettre de stocker toutes nos opérations pour inscrire de la donnée plutôt que de la lire.
 Dans notre cas la mutation **createMessage** accepte un text non nul comme argument et renvoie le message créé.
-Comme a chaque fois on crée un resolver correspondant.
+Comme a chaque fois, on crée un resolver correspondant.
 ```
 Mutation: {
     createMessage: (parent, { text }, { me }) => {
@@ -521,10 +521,10 @@ Mutation: {
     },
   },
 ```
-Le resolver de la mutation as accès au texte grâce au second arguments et a accès a notre user me grâce au troisième qui représente le contexte.
+Le resolver de la mutation a accès au texte grâce au second argument et a accès a notre user grâce au troisième qui représente le contexte.
 L'argument parent ici n'est pas utilisé mais il faut l'indiquer.
 Il nous manque juste une chose, l'attribution d'un Id unique pour chacun de nos nouveaux messages.
-Pour cela nous allons installer une libraires qui va nous y aider.
+Pour cela nous allons installer une librairie qui va nous y aider.
 ```
 npm install uuid --save
 ```
