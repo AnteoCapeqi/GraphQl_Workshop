@@ -914,7 +914,7 @@ On peut ensuite lancer notre serveur.(On utilise stop pour stopper notre db)
 service postgresql start
 ```
 
-Pour verifier que tous fonctionnne on lance la commande
+Pour verifier que tout fonctionnne, on lance la commande
 ```
 sudo service --status-all
 ```
@@ -925,7 +925,7 @@ npm install pg sequelize --save
 ```
 
 Nous allons créer dans notre dossier models deux fichiers : user.js et message.js.
-Comme dis lors de la dernière section nous allons placer notre base de donnée dans le modèle et ne plus utilisé nos deux variables.
+Comme indiqué, lors de la dernière section nous allons placer notre base de données dans le modèle et ne plus utiliser nos deux variables.
 
 Commençons par notre fichier *src/models/user.js*
 ```
@@ -941,7 +941,7 @@ const user = (sequelize, DataTypes) => {
 export default user;
 ```
 On a donc ici une type string unique car nous ne voulons pas avoir deux fois le même username.
-Nous allons ensuite lié notre user a nos message et rajouter une option pour que lors de la suppression d'un User tous les messages associé sois eux aussi effacé.
+Nous allons ensuite lié notre user a nos message et rajouter une option pour que lors de la suppression d'un User tous les messages associé soient eux aussi effacé.
 ```
 const user = (sequelize, DataTypes) => {
   const User = sequelize.define('user', {
@@ -957,7 +957,7 @@ const user = (sequelize, DataTypes) => {
 export default user;
 ```
 
-On va faire de meme pour le fichier *src/models/message.js*
+On va faire de même pour le fichier *src/models/message.js*
 ```
 const message = (sequelize, DataTypes) => {
   const Message = sequelize.define('message', {
@@ -986,8 +986,8 @@ const sequelize = new Sequelize(
 );
 export { sequelize };
 ```
-On utilise ici notre fichier *'.env'* pour stocké nos information sur notre db.
-On va ici associté nos model les un les autres pou faciliter leurs export.
+On utilise ici notre fichier *'.env'* pour stocker nos information sur notre db.
+On va ici associé nos model les un avec les autres pour faciliter leurs exports.
 ```
 import Sequelize from 'sequelize';
 const sequelize = new Sequelize(
@@ -1033,7 +1033,7 @@ sequelize.sync().then(async () => {
 Nous avons terminé le setup de notre base de données mais nous devons encore changer nos resolvers pour que notre application soit fonctionnelle.
 
 ## 8 Connecter nos resolvers et notre Db
-Pour commencer nous allons aller dans notre fichier *src/resolvers/user.js* et changer les lignes suivantes pour pouvoir utiliser Sequelize.
+Pour commencer, nous allons aller dans notre fichier *src/resolvers/user.js* et changer les lignes suivantes pour pouvoir utiliser Sequelize.
 ```
 export default {
   Query: {
@@ -1058,9 +1058,9 @@ export default {
   },
 };
 ```
-On utilise ici les fonction findall() et findByPk() pour trouver tous les messages specifique a un user.
-Avec le where on groupe les messages par userId.
-Fesons de meme avec notre fichier *src/reslvers/message.js*.
+On utilise ici les fonctions findall() et findByPk() pour trouver tous les messages specifiques a un user.
+Avec le where, on groupe les messages par userId.
+Faisons de même avec notre fichier *src/reslvers/message.js*.
 ```
 export default {
   Query: {
@@ -1090,9 +1090,9 @@ export default {
 };
 ```
 On remarque un changement crucial ici , l'utilisation d'async/await.
-En effet sequilize est un un ORM vasé sur les promise et nous renvoie une promesse Javascript.
+En effet sequilize est un un ORM basé sur les promise et nous renvoie une promesse Javascript.
 
-Nous allons maintenant ajouter ajouter manuellement deux users avec leurs messages.
+Nous allons maintenant ajouter manuellement deux users avec leurs messages.
 ```
 const eraseDatabaseOnSync = true;
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
@@ -1135,7 +1135,7 @@ const createUsersWithMessages = async () => {
   );
 };
 ```
-Nous devons ensuite nous occupé de notre user **me**, il ne nous est plus utile car nos user viennent de la db.
+Nous devons ensuite nous occuper de notre user **me**, il ne nous est plus utile car nos user viennent de la db.
 On va donc changer notre fichier '*src/models/user.js*' en lui ajoutant une methode.
  ```
  const user = (sequelize, DataTypes) => {
