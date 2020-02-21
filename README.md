@@ -1,6 +1,6 @@
 # GraphQl_Workshop
-Ce repo a pour objectif de vous aider a apprehender les concepts de GraphQL et de postgresql.
-N'hesitez pas a me renvoyer vos avis et retours, je serais ravi d'upgrader le repo pour faciliter sa compréhension.
+Ce repo a pour objectif de vous aider à apprehender les concepts de GraphQL et de postgresql.
+N'hésitez pas a me renvoyer vos avis et retours, je serais ravi d'upgrader le repo pour faciliter sa compréhension.
 
 ## Prérequis
 - Installer NodeJs
@@ -552,9 +552,9 @@ const resolvers = {
   ...
 }
 ```
-Jusque la notre mutation a creéé un objet message et le renvoie dans notre Api.
-La plupart du temps vous allez les utilisez pour manipuler votre base de donées mais ici nous allons seulement modifier nos deux variable messages et users.
-Nous allons devoir mettre a jour la liste des message disponibles et la liste des messageId doit possédez de nouveaux Id.
+Jusque là, notre mutation a creé un objet message et le renvoie dans notre Api.
+La plupart du temps, vous allez les utiliser pour manipuler votre base de données mais ici, nous allons seulement modifier nos deux variables messages et users.
+Nous allons devoir mettre à jour la liste des messages disponibles et la liste des messageId doit posséder de nouveaux Id.
 ```
 Mutation: {
     createMessage: (parent, { text }, { me }) => {
@@ -587,7 +587,7 @@ type Mutation {
     deleteMessage(id: ID!): Boolean!
   }
 ```
-La mutation nous renvoie ici un Boolean pour voir si la suppression est un succès ou un échec.Il prend comme input
+La mutation nous renvoie ici un Boolean pour voir si la suppression est un succès ou un échec. Il prend comme input
 un identifiant de message.
 On passe au resolver
 ```
@@ -600,17 +600,17 @@ deleteMessage: (parent, { id }) => {
       return true;
     },
 ```
-Ici si il n'y as pas de message on nous retourne false, si il y en a un on crée un objet message sans celui sectionner et on remplace l'ancien objet message par le nouveau.
+Ici, si il n'y a pas de message, on nous retourne false, si il y en a un, on crée un objet message sans celui sectionner et on remplace l'ancien objet message par le nouveau.
 ## 6 Le Stitching
-Le stiching dans notre schéma graphql est une features très pratique.
-Elle permet de fusionner plusieurs scheama en un seul. Pour l'instant nous n'avons qu'un seul schemas mais nous pourrions avoir un schema propre a message et a user.
+Le stiching dans notre schéma graphql est une feature très pratique.
+Elle permet de fusionner plusieurs schemas en un seul. Pour l'instant, nous n'avons qu'un seul schema mais nous pourrions avoir un schema propre a message et a user.
 
 Nous allons commencer par une séparation technique et puis nous passerons sur une séparation par domaine.
 
 ##### Separation Technique
-Pour commencer nous allons créer dans notre dossier *src* trois sous dossiers respectivement nommé models, schema et resolvers. Pour chaque sous dossier nous allons créer un fichier index.js.
+Pour commencer, nous allons créer dans notre dossier *src* trois sous dossiers respectivement nommé models, schema et resolvers. Pour chaque sous-dossier, nous allons créer un fichier index.js.
 
-On va ensuite importé l'ensemble de nos fichiers dans notre index.js principal.
+On va ensuite importer l'ensemble de nos fichiers dans notre index.js principal.
 Voici ce qui doit se trouver dans le fichier '*src/index.js*'
 ```
 import cors from 'cors';
@@ -634,9 +634,9 @@ app.listen({ port: 8001 }, () => {
   console.log('Apollo Server on http://localhost:8001/graphql');
 });
 ```
-Nous avons ici ajouter les models dans notre context. Nos modele sont nos acces au données ici se sont des variable mais elle pourrait bien être d'une db ou d'une autre Api.
+Nous avons ici ajouter les models dans notre context. Nos modeles sont nos acces au données, ici, ce sont des variables mais elles pourraient bien être d'une db ou d'une autre Api.
 
-Nous pouvons ensuite passé nos échantillons de données dans le fichier *src/models/index.js*
+Nous pouvons ensuite passer nos échantillons de données dans le fichier *src/models/index.js*
 ```
 let users = {
   1: {
@@ -667,8 +667,8 @@ export default {
   messages,
 };
 ```
-Comme nous avons placé nos modeles dans notre context il seront disponibles pour chaque resolvers.
-En parlant du loup on peut faire comme pour precedement et aller placer nos resolvers dans le fichier *src/resolvers/index.js*. Nous devons cependant ajouter notre model a nos fonction pour qu'il fonctionne.
+Comme nous avons placé nos modeles dans notre context, ils seront disponibles pour chaque resolvers.
+En parlant du loup, on peut faire comme pour precedement et aller placer nos resolvers dans le fichier *src/resolvers/index.js*. Nous devons cependant ajouter notre model a nos fonctions pour que cela fonctionne.
 ```
 import uuidv4 from 'uuid/v4';
 export default {
@@ -724,9 +724,9 @@ export default {
   },
 };
 ```
-Les resolvers reçoivent les infos du model via le context(troisième arguments) plutôt que de le recevoir directement de notre échantillons de donnée.
+Les resolvers reçoivent les infos du model via le context(troisième arguments) plutôt que de le recevoir directement de notre échantillon de données.
 
-Enfin nous pouvons placer nos schémas dans le fichier *src/schema/index.js*
+Enfin, nous pouvons placer nos schémas dans le fichier *src/schema/index.js*
 ```
 import { gql } from 'apollo-server-express';
 export default gql`
@@ -753,13 +753,13 @@ export default gql`
   }
 `;
 ```
-Notre séparation technique est terminée mais nous n'en avons pas finis, en effet nous avons toujours un seul schémas pour toutes nôtres application.
+Notre séparation technique est terminée mais nous n'en avons pas fini, en effet nous avons toujours un seul schéma pour toutes notre application.
 
 ##### Separation par Domaine
 
-Nous allons pour les sous dossiers schema et resolvers crée deux fichiers nommé *user.js* et *message.js*
+Nous allons pour les sous-dossiers schema et resolvers créer deux fichiers nommé *user.js* et *message.js*
 
-Nous allons ensuite comme précédemment fractionner nos fichier dans plusieurs fichiers.Commencons par notre schema.
+Nous allons ensuite, comme précédemment, fractionner nos fichiers dans plusieurs fichiers. Commencons par notre schema.
 
 Dans le fichier *src/schema/user.js*
 ```
@@ -796,9 +796,9 @@ export default gql`
   }
 `;
 ```
-Chaque fichier décris maintenant son entité plutôt que tout les avoir dans un seul fichier.
-Nous avons rajouté un extend a nos query et nos mutation maintenant que nous avons plusieurs schémas grapql nous devons rajouter l'extend.
-Maintenant il ne nous reste plus qu'a définir le schéma qui regroupe nos deux schémas dans notre fichier *src/schema/index.js:*
+Chaque fichier décrit maintenant son entité plutôt que tous les avoir dans un seul fichier.
+Nous avons rajouté un extend a nos query et nos mutations. Maintenant que nous avons plusieurs schémas graphql, nous devons rajouter l'extend.
+Maintenant, il ne nous reste plus qu'a définir le schéma qui regroupe nos deux schémas dans notre fichier *src/schema/index.js:*
 ```
 import { gql } from 'apollo-server-express';
 import userSchema from './user';
@@ -813,7 +813,7 @@ const linkSchema = gql`
 `;
 export default [linkSchema, userSchema, messageSchema];
 ```
-Dans se fichier nos deux schémas sont fusionner avec linkSchema qui définis tous les type partagé par tous les schémas.
+Dans ce fichier, nos deux schémas sont fusionnés avec linkSchema qui défini tout les types partagés par tous les schémas.
 Le champ underscore vide avec le champ Boolean est une obligation.
 
 On va faire la meme chose avec nos resolvers, on commence par le fichier *src/resolvers/user.js*.
@@ -892,14 +892,14 @@ Vous avez maintenant un point de départ pour votre application graphql avec nod
 
 Nous avons une application fonctionnelle mais toujours pas de base de données. Nous y voila!
 
-Dans cette section nous allons setup notre db postgresql avec comme **ORM**(Object-relational mapping) Sequelize.
+Dans cette section nous allons setup notre db postgresql avec comme **ORM** (Object-relational mapping) Sequelize.
 Un **ORM** permet au développeurs de manipuler la db avec du Javascript plutôt qu'avec un Query langage.
 
 On va commencer par installer Postgresql sur notre machine.
 ```
 sudo apt-get install postgresql
 ```
-On cree ensuite nos user, db et mdp pour notre db.
+On crée ensuite nos user, db et mdp pour notre db.
 ```
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
 sudo -u postgres psql -c "CREATE DATABASE postgres;"
